@@ -17,3 +17,8 @@ output "function_name" {
   value       = aws_lambda_function.lambda.function_name
   description = "The name of the function created"
 }
+
+output "invoke_arn" {
+  value       = aws_lambda_function.lambda.arn
+  description = "The ARN to be used for invoking Lambda Function from API Gateway"
+}

@@ -2,9 +2,9 @@
 
 ```hcl
 module "function" {
-  source = "github.com/globeandmail/aws-lambda-function?ref=1.0"
+  source = "github.com/globeandmail/aws-lambda-function?ref=1.1"
 
-  function_name      = my-lambda-function
+  function_name      = "my-lambda-function"
   tags               = var.tags
 }
 ```
@@ -38,4 +38,5 @@ module "function" {
 | function\_name | The name of the function created |
 | role\_arn | The ARN of the role created |
 | role\_id | The name of the role created |
+| invoke\_arn | The ARN to be used for invoking Lambda Function from API Gateway |
 
