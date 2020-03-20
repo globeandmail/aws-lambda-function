@@ -28,7 +28,9 @@ resource "aws_lambda_function" "lambda" {
     subnet_ids         = var.subnet_ids
     security_group_ids = var.security_group_ids
   }
-
+  dead_letter_config {
+    target_arn = var.sns_target_arn != null ? var.sns_target_arn : (var.sqs_target_arn != null ? var.sqs_target_arn : "")
+  }
   tags = var.tags
 }
 
@@ -99,4 +101,44 @@ resource "aws_cloudwatch_log_group" "log_group" {
   retention_in_days = var.retention_in_days
 
   tags = var.tags
+}
+
+data "aws_iam_policy_document" "sns_target" {
+  count = var.sns_target_arn != null ? 1 : 0
+  statement {
+    actions = [
+      "sns:Publish"
+    ]
+
+    resources = [
+      var.sns_target_arn
+    ]
+  }
+}
+
+resource "aws_iam_role_policy" "sns_target" {
+  count  = var.sns_target_arn != null ? 1 : 0
+  name   = "${var.function_name}-sns-target-policy"
+  role   = aws_iam_role.lambda.id
+  policy = data.aws_iam_policy_document.sns_target[count.index].json
+}
+
+data "aws_iam_policy_document" "sqs_target" {
+  count = var.sqs_target_arn != null ? 1 : 0
+  statement {
+    actions = [
+      "sqs:SendMessage"
+    ]
+
+    resources = [
+      var.sqs_target_arn
+    ]
+  }
+}
+
+resource "aws_iam_role_policy" "sqs_target" {
+  count  = var.sqs_target_arn != null ? 1 : 0
+  name   = "${var.function_name}-sqs-target-policy"
+  role   = aws_iam_role.lambda.id
+  policy = data.aws_iam_policy_document.sqs_target[count.index].json
 }
