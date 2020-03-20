@@ -2,7 +2,7 @@
 
 ```hcl
 module "function" {
-  source = "github.com/globeandmail/aws-lambda-function?ref=1.1"
+  source = "github.com/globeandmail/aws-lambda-function?ref=1.2"
 
   function_name      = "my-lambda-function"
   tags               = var.tags
