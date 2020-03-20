@@ -2,7 +2,7 @@
 
 ```hcl
 module "function" {
-  source = "github.com/globeandmail/aws-lambda-function?ref=1.1"
+  source = "github.com/globeandmail/aws-lambda-function?ref=1.2"
 
   function_name      = "my-lambda-function"
   tags               = var.tags
@@ -29,6 +29,8 @@ module "function" {
 | subnet\_ids | Required for running this Lambda function in a VPC | list | `[]` | no |
 | tags | A mapping of tags to assign to the resource | map | `{}` | no |
 | timeout | The amount of time this Lambda Function has to run in seconds | string | `"5"` | no |
+| sns_target_arn | SNS arn to be set when to send notification for lambda failure | string | `""` | no |
+| sqs_target_arn | SQS arn to be set when to send notification for lambda failure | string | `""` | no |
 
 ## Outputs
 

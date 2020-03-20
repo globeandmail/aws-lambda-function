@@ -87,3 +87,15 @@ variable "tags" {
   default     = {}
   description = "A mapping of tags to assign to the resource"
 }
+
+variable "sns_target_arn" {
+  type = string
+  default = null
+  description = "SNS arn for the target when there is a failure"
+}
+
+variable "sqs_target_arn" {
+  type = string
+  default = null
+  description = "SQS arn for the target when there is a failure"
+}
