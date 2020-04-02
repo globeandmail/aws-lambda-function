@@ -5,7 +5,7 @@ locals {
   aws_region = data.aws_region.current.name
   account_id = data.aws_caller_identity.current.account_id
   datetime   = formatdate("YYYYMMDDhhmmss", timestamp())
-  # target_arn = var.sns_target_arn != "" ? var.sns_target_arn : (var.sqs_target_arn != "" ? var.sqs_target_arn : ""
+  env_vars   = var.env_vars[*]
 }
 
 resource "aws_lambda_function" "lambda" {
@@ -21,8 +21,11 @@ resource "aws_lambda_function" "lambda" {
   // Use empty_function.zip if no other file is specified
   filename = length(var.filename) > 0 ? var.filename : "${path.module}/files/empty_function.zip"
 
-  environment {
-    variables = var.env_vars
+  dynamic "environment" {
+    for_each = local.env_vars
+    content {
+      variables = environment.value
+    }
   }
 
   vpc_config {
@@ -110,7 +113,7 @@ resource "aws_cloudwatch_log_group" "log_group" {
 }
 
 data "aws_iam_policy_document" "sns_target" {
-  count = var.sns_target_arn != null ? 1 : 0
+  count = var.sns_target_arn != "" ? 1 : 0
   statement {
     actions = [
       "sns:Publish"
@@ -123,14 +126,14 @@ data "aws_iam_policy_document" "sns_target" {
 }
 
 resource "aws_iam_role_policy" "sns_target" {
-  count  = var.sns_target_arn != null ? 1 : 0
+  count  = var.sns_target_arn != "" ? 1 : 0
   name   = "${var.function_name}-sns-target-policy"
   role   = aws_iam_role.lambda.id
   policy = data.aws_iam_policy_document.sns_target[count.index].json
 }
 
 data "aws_iam_policy_document" "sqs_target" {
-  count = var.sqs_target_arn != null ? 1 : 0
+  count = var.sqs_target_arn != "" ? 1 : 0
   statement {
     actions = [
       "sqs:SendMessage"
@@ -143,7 +146,7 @@ data "aws_iam_policy_document" "sqs_target" {
 }
 
 resource "aws_iam_role_policy" "sqs_target" {
-  count  = var.sqs_target_arn != null ? 1 : 0
+  count  = var.sqs_target_arn != "" ? 1 : 0
   name   = "${var.function_name}-sqs-target-policy"
   role   = aws_iam_role.lambda.id
   policy = data.aws_iam_policy_document.sqs_target[count.index].json
