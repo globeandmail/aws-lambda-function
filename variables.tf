@@ -70,6 +70,12 @@ variable "security_group_ids" {
   description = "Required for running this Lambda function in a VPC"
 }
 
+variable "use_secrets" {
+  type        = bool
+  default     = false
+  description = "Required to be set to true if using secret_arn"
+}
+
 variable "secret_arn" {
   type        = string
   default     = null
@@ -89,13 +95,20 @@ variable "tags" {
 }
 
 variable "sns_target_arn" {
-  type = string
-  default = null
+  type        = string
+  default     = ""
   description = "SNS arn for the target when there is a failure"
 }
 
 variable "sqs_target_arn" {
-  type = string
-  default = null
+  type        = string
+  default     = ""
   description = "SQS arn for the target when there is a failure"
+}
+
+variable "dead_letter_config" {
+  type = object({
+    target_arn = string
+  })
+  default = null
 }

@@ -5,6 +5,7 @@ locals {
   aws_region = data.aws_region.current.name
   account_id = data.aws_caller_identity.current.account_id
   datetime   = formatdate("YYYYMMDDhhmmss", timestamp())
+  # target_arn = var.sns_target_arn != "" ? var.sns_target_arn : (var.sqs_target_arn != "" ? var.sqs_target_arn : ""
 }
 
 resource "aws_lambda_function" "lambda" {
@@ -28,9 +29,14 @@ resource "aws_lambda_function" "lambda" {
     subnet_ids         = var.subnet_ids
     security_group_ids = var.security_group_ids
   }
-  dead_letter_config {
-    target_arn = var.sns_target_arn != null ? var.sns_target_arn : (var.sqs_target_arn != null ? var.sqs_target_arn : "")
+
+  dynamic "dead_letter_config" {
+    for_each = var.dead_letter_config == null ? [] : [var.dead_letter_config]
+    content {
+      target_arn = dead_letter_config.value.target_arn
+    }
   }
+
   tags = var.tags
 }
 
@@ -59,7 +65,7 @@ resource "aws_iam_role" "lambda" {
 }
 
 data "aws_iam_policy_document" "secrets_manager" {
-  count = var.secret_arn != null ? 1 : 0
+  count = var.use_secrets == true ? 1 : 0
   statement {
     actions = [
       "secretsmanager:GetResourcePolicy",
@@ -75,7 +81,7 @@ data "aws_iam_policy_document" "secrets_manager" {
 }
 
 resource "aws_iam_role_policy" "secrets_manager" {
-  count  = var.secret_arn != null ? 1 : 0
+  count  = var.use_secrets == true ? 1 : 0
   name   = "${var.function_name}-secretsmanager-policy"
   role   = aws_iam_role.lambda.id
   policy = data.aws_iam_policy_document.secrets_manager[count.index].json
