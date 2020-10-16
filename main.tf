@@ -46,7 +46,7 @@ resource "aws_lambda_function" "lambda" {
 resource "aws_lambda_alias" "alias" {
   name             = var.alias
   function_name    = aws_lambda_function.lambda.arn
-  function_version = aws_lambda_function.lambda.version
+  function_version = "$LATEST"
 }
 
 data "aws_iam_policy_document" "lambda_role" {
